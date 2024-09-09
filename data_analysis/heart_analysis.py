@@ -76,19 +76,19 @@ grouped_data = heart.groupby("present").agg(
 # - restecg (resting ECG)
 # - ca (number of vessels colored by fluoroscopy)
 
-predictor_columns = ['age',
-             'thalach',
-             'restecg',
-             'ca',
+# predictor_columns = ['age',
+#              'thalach',
+#              'restecg',
+#              'ca',
        
-            ]
+#             ]
 
 
-predictors = heart[predictor_columns]
+# predictors = heart[predictor_columns]
 
 
 
-outcome_var = heart['present']
+# outcome_var = heart['present']
 
 # Divide the data into train test datasets
 
@@ -218,6 +218,9 @@ def coefs(model):
         "thalach",
         "restecg",
         "ca",
+         'sex',
+        'cp',
+        'trestbps'
        ]
     
 
@@ -228,6 +231,38 @@ def coefs(model):
         s = coef, ":", round(val, 2)
         coef_values.append(s)
         return coef_values
+    
+    
+def odds(model, predictors, outcome):
+
+    all_odds =[]
+
+    cf = model.coef_
+
+    for z in cf[0]:
+        log_odds = z
+
+        o = np.exp(log_odds)
+        all_odds.append(o)
+
+    
+    key_indicators = pd.DataFrame(predictors.columns)
+
+    key_indicators['odds'] = all_odds
+
+    key_indicators.rename(columns = {0:"key_indicators"},
+                          inplace = True)
+    
+
+    key_indicators_sorted = key_indicators.sort_values(by = 'odds',
+                                                        ascending = False)
+    
+
+    key_indicators_sorted['percentage_effect'] = 100* (key_indicators_sorted['odds'] - 1)
+
+    return key_indicators_sorted
+
+
 
 
 

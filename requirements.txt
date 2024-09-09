@@ -25,3 +25,4 @@ zipp
 gunicorn
 rsconnect-python
 shinyswatch
+Jinja2
