@@ -68,6 +68,7 @@ x_train, x_test, y_train, y_test = split_data(predictors,
 
 bayesian_model = az.from_netcdf('output/heart_model.nc')
 
+build_and_train_model(x_train, y_train)
 
 logit_model = joblib.load('output/logistic_model.pkl')
 
@@ -95,6 +96,34 @@ glossary = {
     "present": "Presence of Heart Disease"
     # Add more terms as needed
 }
+
+cols_to_use_distributions = ['age',
+                             'sex',
+                            'thalach',
+                            'restecg',
+                            'ca',
+                            'sex',
+                            'cp',
+                            'trestbps',
+                            'chol',
+                            'fbs',
+                            'exang',
+                            'thal'
+                             ]
+
+
+cols_to_use_logit_fit =     ['age',
+                            'thalach',
+                            'restecg',
+                            'ca',
+                            'sex',
+                            'cp',
+                            'trestbps',
+                            'chol',
+                            'fbs',
+                            'exang',
+                            'thal'
+                             ]
 
 # User interface (UI) definition
 
@@ -125,7 +154,7 @@ app_ui = ui.page_fluid(
     
     ui.sidebar( # A select input for choosing the variable to plot
     ui.input_select(
-        "var", "Select variable", choices= list(heart.columns),
+        "var", "Select variable", choices= list(cols_to_use_distributions),
         selected = 'age'
     ),),
     # Add a title to the page with some top padding
@@ -139,7 +168,7 @@ app_ui = ui.page_fluid(
     
     ui.sidebar( # A select input for choosing the variable to plot
     ui.input_select(
-        "var_2", "Select variable", choices= list(heart.columns),
+        "var_2", "Select variable", choices= list(cols_to_use_logit_fit),
         selected = 'age'
     ),),
     # Add a title to the page with some top padding
