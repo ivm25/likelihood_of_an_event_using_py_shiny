@@ -218,9 +218,9 @@ def coefs(model):
         "thalach",
         "restecg",
         "ca",
-         'sex',
-        'cp',
-        'trestbps'
+        #  'sex',
+        # 'cp',
+        # 'trestbps'
        ]
     
 

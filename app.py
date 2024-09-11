@@ -27,6 +27,16 @@ from sklearn.metrics import recall_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import classification_report
 
+
+
+from plotnine import *
+from plotnine import aes, ggplot
+from plotnine.geoms import geom_col, geom_line
+from plotnine.geoms.geom_point import geom_point
+from plotnine.geoms.geom_smooth import geom_smooth
+
+
+
 # Styles
 
 plt.style.use('ggplot')    
@@ -47,9 +57,9 @@ predictor_columns = ['age',
              'thalach',
              'restecg',
              'ca',
-             'sex',
-             'cp',
-             'trestbps'
+            #  'sex',
+            #  'cp',
+            #  'trestbps'
             ]
 
 
@@ -67,6 +77,19 @@ x_train, x_test, y_train, y_test = split_data(predictors,
 
 
 bayesian_model = az.from_netcdf('output/heart_model.nc')
+
+trace_df = az.extract(bayesian_model, 
+                      var_names=['age',
+                                  'thalach',
+                                   'restecg',
+                                    'ca', 'Intercept']).to_dataframe()
+
+trace_long = pd.melt(trace_df, id_vars=['chain', 'draw'], 
+                     var_name='variable',
+                       value_name='value')
+
+summary_df = az.summary(bayesian_model).reset_index()
+
 
 build_and_train_model(x_train, y_train)
 
@@ -189,28 +212,45 @@ app_ui = ui.page_fluid(
     # Add a title to the page with some top padding
     ui.panel_title(ui.h2("Odds", class_="pt-5")),
     # A container for plot output
-    ui.output_table("Odds_summary"),
+    ui.output_plot("Odds_summary"),
 
     )
     )
 
-
-    # , ui.nav_panel("bayesian posterior probabilities",  
-    # ui.layout_sidebar(
+    , ui.nav_panel("bayesian posterior probabilities",  
+    ui.layout_sidebar(
     
-    # ui.sidebar( # A select input for choosing the variable to plot
+    ui.sidebar( # A select input for choosing the variable to plot
     # ui.input_select(
     #     "var_3", "Select variable", choices= list(heart.columns),
     #     selected = 'age'
-    # ),),
-    # # Add a title to the page with some top padding
-    # ui.panel_title(ui.h2("Posterior Probabilities", class_="pt-5")),
-    # # A container for plot output
-    # ui.output_plot("posteriors"),
+    # ),
+    ),
+    # Add a title to the page with some top padding
+    ui.panel_title(ui.h2("Posterior Probabilities", class_="pt-5")),
+    # A container for plot output
+    ui.output_plot("posteriors"),
 
-    # )
-    # )
-    , ui.nav_panel("roc-auc",  
+    )
+    )
+    ,
+    ui.nav_panel("bayesian probabaility summary",  
+    ui.layout_sidebar(
+    
+    ui.sidebar( # A select input for choosing the variable to plot
+    # ui.input_select(
+    #     "var_3", "Select variable", choices= list(heart.columns),
+    #     selected = 'age'
+    # ),
+    ),
+    # Add a title to the page with some top padding
+    ui.panel_title(ui.h2("Posterior summary", class_="pt-5")),
+    # A container for plot output
+    ui.output_table("posterior_summary"),
+
+    )
+    )
+    ,ui.nav_panel("roc-auc",  
     ui.layout_sidebar(
     
     ui.sidebar( # A select input for choosing the variable to plot
@@ -260,23 +300,60 @@ def server(input, output, session: Session):
                      )
     
 
-    @render.table
+    @render.plot
     def Odds_summary():
         # Histogram of the selected variable (input.var())
         p = pd.DataFrame(odds(logit_model,
                  predictors,
                  y))
         
-            
-        return p
-    
+        plt.style.use('ggplot')
 
-    # @render.plot
-    # def posteriors():
+        g = (ggplot(data = p, mapping = aes(x = 'reorder(key_indicators, odds)',
+                                            y = 'percentage_effect')
+                                            )
+            + geom_point(aes(x = 'key_indicators',
+                             y = 'percentage_effect'),
+                             color = 'red',
+                             size = 5)
+            + geom_col(color = 'red',
+                       fill = 'grey',
+                       alpha = 0.2)
+
+            + geom_segment(aes(y = 0,
+                               x = 'key_indicators',
+                               yend = 'percentage_effect',
+                               xend = 'key_indicators'))     
+
+            + theme_seaborn()
+
+            + labs(title = 'Odds of a person having heart disease',
+                   x = 'key_indicators',
+                   y = 'Percentage')
+
+            + coord_flip()
+
+             )
         
-    #     z = az.plot_forest(bayesian_model
-    #            )
-    #     return z
+        return g
+    
+  
+    
+    @render.plot
+    def posteriors():
+        
+      
+        z = (ggplot(trace_long, aes(x='value', fill = 'variable')) +
+                  geom_histogram(bins=30, alpha=0.4) 
+                +  facet_wrap('~variable', scales='free')
+                  )
+        return z
+    
+    @render.table
+    def posterior_summary():
+        
+        return summary_df
+    
     
 
     @render.plot
