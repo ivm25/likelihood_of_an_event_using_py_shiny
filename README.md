@@ -32,7 +32,7 @@ The dataset used in this project is the Heart Disease dataset from the UCI Machi
 To run this project, you need to have Python installed along with the following packages:
 
 - Use the requirements.txt file to install the required packages in your virtual environment
-```
+
 
 ## Usage
 
