@@ -1,6 +1,3 @@
-That sounds like a fantastic project! Here's a template for your README file that you can customize to fit your needs:
-
----
 
 # Heart Disease Analysis and Classification
 
@@ -16,12 +13,11 @@ This project aims to analyze the Heart Disease dataset from the UCI Machine Lear
 - [Usage](#usage)
 - [Models and Analysis](#models-and-analysis)
   - [Logistic Regression](#logistic-regression)
-  - [XGBoost](#xgboost)
   - [Bayesian Modeling](#bayesian-modeling)
 - [Results](#results)
 - [Shiny App](#shiny-app)
 - [Contributing](#contributing)
-- [License](#license)
+
 
 ## Dataset
 
@@ -48,9 +44,6 @@ To run this project, you need to have Python installed along with the following 
 
 Logistic regression is used to model the probability of a binary outcome based on one or more predictor variables. In this project, we use logistic regression to classify the presence of heart disease.
 
-### XGBoost
-
-XGBoost is an optimized gradient boosting library designed to be highly efficient and flexible. We use XGBoost to improve the classification performance.
 
 ### Bayesian Modeling
 
@@ -61,25 +54,22 @@ Bayesian modeling using Bernoulli distributions is employed to compare the resul
 The results of the analysis are presented in the Python Shiny app, which includes:
 
 - Distribution of key factors
-- Logistic regression model outputs
+- Logistic regression model fitting
 - Odds of heart disease
-- ROC-AUC curves for model comparison
+- Bayesian Probabilities
 
 ## Shiny App
 
 The Shiny app provides an interactive interface to explore the analysis results. It includes various panels for different aspects of the analysis:
 
 - **Distributions**: Visualize the distribution of key factors.
-- **Logit Model**: View logistic regression model outputs.
-- **Odds of Heart Disease**: Summarize the odds of heart disease.
-- **ROC-AUC**: Compare the ROC-AUC curves of different models.
+- **Heart DIsease**: View logistic regression model fitting.
+- **Odds of having Heart Disease**: Summarize the odds of having heart disease.
+- **Bayesian Approach**: Demonstrate the Bayesian posterior probabilities of  factors causing Heart Disease.
 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 

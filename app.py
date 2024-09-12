@@ -163,7 +163,12 @@ app_ui = ui.page_fluid(
     ui.navset_card_pill(ui.nav_panel("Understanding the data and its terminologies",  
     ui.layout_sidebar(
     
-    ui.sidebar( # A select input for choosing the variable to plot
+    ui.sidebar(ui.p("""This analsis is an objective take on
+                        the various factors that could potentially 
+                        impact heart on the basis of all the factors
+                        in this dataset.
+                        
+                        """)
  
     ),
     # Add a title to the page with some top padding
@@ -172,7 +177,7 @@ app_ui = ui.page_fluid(
     ui.output_ui("glossary_content"),
    
     )
-    ),ui.nav_panel("Distributions of various factors",  
+    ),ui.nav_panel("Distributions",  
     ui.layout_sidebar(
     
     ui.sidebar( # A select input for choosing the variable to plot
@@ -186,7 +191,7 @@ app_ui = ui.page_fluid(
     ui.output_plot("hist"),
    
     )
-    ),ui.nav_panel("Presence of Heart Disease",  
+    ),ui.nav_panel("Heart Disease",  
     ui.layout_sidebar(
     
     ui.sidebar( # A select input for choosing the variable to plot
@@ -195,12 +200,12 @@ app_ui = ui.page_fluid(
         selected = 'age'
     ),),
     # Add a title to the page with some top padding
-    ui.panel_title(ui.h2("Presence of Heart disease for Males and females fitted as a Logit function", class_="pt-5")),
+    ui.panel_title(ui.h2("Presence of Heart disease for Males and Females fitted as a Logit function", class_="pt-5")),
     # A container for plot output
     ui.output_plot("logit_plot"),
 
     )
-    ),ui.nav_panel("Odds of Heart Disease",  
+    ),ui.nav_panel("Odds of having Heart Disease",  
     ui.layout_sidebar(
     
     ui.sidebar( # A select input for choosing the variable to plot
@@ -217,7 +222,7 @@ app_ui = ui.page_fluid(
     )
     )
 
-    , ui.nav_panel("bayesian posterior probabilities",  
+    , ui.nav_panel("Bayesian Approach",  
     ui.layout_sidebar(
     
     ui.sidebar( # A select input for choosing the variable to plot
@@ -234,7 +239,7 @@ app_ui = ui.page_fluid(
     )
     )
     ,
-    ui.nav_panel("bayesian probabaility summary",  
+    ui.nav_panel("Bayesian Summary Stats",  
     ui.layout_sidebar(
     
     ui.sidebar( # A select input for choosing the variable to plot
@@ -250,22 +255,22 @@ app_ui = ui.page_fluid(
 
     )
     )
-    ,ui.nav_panel("roc-auc",  
-    ui.layout_sidebar(
+    # ,ui.nav_panel("roc-auc",  
+    # ui.layout_sidebar(
     
-    ui.sidebar( # A select input for choosing the variable to plot
-    ui.input_radio_buttons(
-        "model_type", "Select model", choices= [1,
-                                                2],
-        # selected = logit_model
-    ),),
-    # Add a title to the page with some top padding
-    ui.panel_title(ui.h2("ROC-AUC", class_="pt-5")),
-    # A container for plot output
-    ui.output_plot("roc_plot"),
+    # ui.sidebar( # A select input for choosing the variable to plot
+    # ui.input_radio_buttons(
+    #     "model_type", "Select model", choices= [1,
+    #                                             2],
+    #     # selected = logit_model
+    # ),),
+    # # Add a title to the page with some top padding
+    # ui.panel_title(ui.h2("ROC-AUC", class_="pt-5")),
+    # # A container for plot output
+    # ui.output_plot("roc_plot"),
 
-    )
-    )   
+    # )
+    # )   
     ), theme = shinyswatch.theme.journal(),
 )
 
@@ -316,9 +321,9 @@ def server(input, output, session: Session):
                              y = 'percentage_effect'),
                              color = 'red',
                              size = 5)
-            + geom_col(color = 'red',
-                       fill = 'grey',
-                       alpha = 0.2)
+            # + geom_col(color = 'red',
+            #            fill = 'grey',
+            #            alpha = 0.2)
 
             + geom_segment(aes(y = 0,
                                x = 'key_indicators',
@@ -356,25 +361,25 @@ def server(input, output, session: Session):
     
     
 
-    @render.plot
-    def roc_plot():
+    # @render.plot
+    # def roc_plot():
 
-        probs = logit_model.predict_proba(x_test)[:,1]
+    #     probs = logit_model.predict_proba(x_test)[:,1]
 
-        auc = roc_auc_score(y_test, probs)
-        # Calculate metrics for the roc curve
-        fpr, tpr, thresholds = roc_curve(y_test, probs)
+    #     auc = roc_auc_score(y_test, probs)
+    #     # Calculate metrics for the roc curve
+    #     fpr, tpr, thresholds = roc_curve(y_test, probs)
         
-        g = plt.figure()
-        plt.style.use('ggplot')
-        plt.figure(figsize = (8, 8))
+    #     g = plt.figure()
+    #     plt.style.use('ggplot')
+    #     plt.figure(figsize = (8, 8))
         
-        # Plot the roc curve
-        plt.plot(fpr, tpr, 'b')
-        plt.xlabel('False Positive Rate', size = 16)
-        plt.ylabel('True Positive Rate', size = 16)
-        plt.title('Receiver Operating Characteristic Curve, AUC = %0.4f' % auc, 
-                    size = 18)
+    #     # Plot the roc curve
+    #     plt.plot(fpr, tpr, 'b')
+    #     plt.xlabel('False Positive Rate', size = 16)
+    #     plt.ylabel('True Positive Rate', size = 16)
+    #     plt.title('Receiver Operating Characteristic Curve, AUC = %0.4f' % auc, 
+    #                 size = 18)
         
         
     @output
