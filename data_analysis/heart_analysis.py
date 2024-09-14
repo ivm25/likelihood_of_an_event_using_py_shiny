@@ -258,7 +258,7 @@ def odds(model, predictors, outcome):
                                                         ascending = False)
     
 
-    key_indicators_sorted['percentage_effect'] = 100* (key_indicators_sorted['odds'] - 1)
+    key_indicators_sorted['percentage_effect'] = (key_indicators_sorted['odds'])
 
     return key_indicators_sorted
 

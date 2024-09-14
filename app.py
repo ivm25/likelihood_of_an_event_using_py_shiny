@@ -99,6 +99,10 @@ xgboost_model = joblib.load('output/xgboost_model.pkl')
 
 
 glossary = {
+    "Aim of the study": 
+    "Analyse Heart Disease Data from UCI Machine Learning Library, using Frequentist and Bayesian Classification Methods.",
+
+
     "Age": "Age of the person",
     "sex": "Sex of the person (1 = male; 0 = female)",
     "cp": "chest pain type",
@@ -160,7 +164,7 @@ app_ui = ui.page_fluid(
                                         ui.h4("Understanding Heart Disease"))
                  ),
             
-    ui.navset_card_pill(ui.nav_panel("Understanding the data and its terminologies",  
+    ui.navset_card_pill(ui.nav_panel("Problem Statement",  
     ui.layout_sidebar(
     
     ui.sidebar(ui.p("""This analsis is an objective take on
@@ -172,16 +176,16 @@ app_ui = ui.page_fluid(
  
     ),
     # Add a title to the page with some top padding
-    ui.panel_title(ui.h2("Meaning of various columns", class_="pt-5")),
+    ui.panel_title(ui.h2("Aim of study and meaning of various columns", class_="pt-5")),
     # A container for plot output
     ui.output_ui("glossary_content"),
    
     )
-    ),ui.nav_panel("Distributions",  
+    ),ui.nav_panel("Data Distributions",  
     ui.layout_sidebar(
     
     ui.sidebar( # A select input for choosing the variable to plot
-    ui.input_select(
+    ui.input_radio_buttons(
         "var", "Select variable", choices= list(cols_to_use_distributions),
         selected = 'age'
     ),),
@@ -191,45 +195,29 @@ app_ui = ui.page_fluid(
     ui.output_plot("hist"),
    
     )
-    ),ui.nav_panel("Heart Disease",  
+    ),ui.nav_panel("Presence of Heart Disease",  
     ui.layout_sidebar(
     
     ui.sidebar( # A select input for choosing the variable to plot
-    ui.input_select(
+    ui.input_radio_buttons(
         "var_2", "Select variable", choices= list(cols_to_use_logit_fit),
-        selected = 'age'
+        selected = 'ca'
     ),),
     # Add a title to the page with some top padding
-    ui.panel_title(ui.h2("Presence of Heart disease for Males and Females fitted as a Logit function", class_="pt-5")),
+    ui.panel_title(ui.h2("Presence of Heart disease fitted as a Logit function", class_="pt-5")),
     # A container for plot output
     ui.output_plot("logit_plot"),
-
+    ui.output_plot("Odds_summary")
     )
-    ),ui.nav_panel("Odds of having Heart Disease",  
+    )
+ 
+    , ui.nav_panel("Bayesian Probabilities",  
     ui.layout_sidebar(
     
-    ui.sidebar( # A select input for choosing the variable to plot
-    # ui.input_select(
-    #     "var_3", "Select variable", choices= list(heart.columns),
-    #     selected = 'age'
-    # )
-    ),
-    # Add a title to the page with some top padding
-    ui.panel_title(ui.h2("Odds", class_="pt-5")),
-    # A container for plot output
-    ui.output_plot("Odds_summary"),
-
-    )
-    )
-
-    , ui.nav_panel("Bayesian Approach",  
-    ui.layout_sidebar(
-    
-    ui.sidebar( # A select input for choosing the variable to plot
-    # ui.input_select(
-    #     "var_3", "Select variable", choices= list(heart.columns),
-    #     selected = 'age'
-    # ),
+    ui.sidebar( """Bayesian Posterior Probabilities 
+                   show the Log Odds of Heart Disease
+                   as a function of all the factors.
+                   """
     ),
     # Add a title to the page with some top padding
     ui.panel_title(ui.h2("Posterior Probabilities", class_="pt-5")),
@@ -238,39 +226,7 @@ app_ui = ui.page_fluid(
 
     )
     )
-    ,
-    ui.nav_panel("Bayesian Summary Stats",  
-    ui.layout_sidebar(
-    
-    ui.sidebar( # A select input for choosing the variable to plot
-    # ui.input_select(
-    #     "var_3", "Select variable", choices= list(heart.columns),
-    #     selected = 'age'
-    # ),
-    ),
-    # Add a title to the page with some top padding
-    ui.panel_title(ui.h2("Posterior summary", class_="pt-5")),
-    # A container for plot output
-    ui.output_table("posterior_summary"),
 
-    )
-    )
-    # ,ui.nav_panel("roc-auc",  
-    # ui.layout_sidebar(
-    
-    # ui.sidebar( # A select input for choosing the variable to plot
-    # ui.input_radio_buttons(
-    #     "model_type", "Select model", choices= [1,
-    #                                             2],
-    #     # selected = logit_model
-    # ),),
-    # # Add a title to the page with some top padding
-    # ui.panel_title(ui.h2("ROC-AUC", class_="pt-5")),
-    # # A container for plot output
-    # ui.output_plot("roc_plot"),
-
-    # )
-    # )   
     ), theme = shinyswatch.theme.journal(),
 )
 
@@ -321,9 +277,9 @@ def server(input, output, session: Session):
                              y = 'percentage_effect'),
                              color = 'red',
                              size = 5)
-            # + geom_col(color = 'red',
-            #            fill = 'grey',
-            #            alpha = 0.2)
+            + geom_col(color = 'red',
+                       fill = 'grey',
+                       alpha = 0.2)
 
             + geom_segment(aes(y = 0,
                                x = 'key_indicators',
@@ -333,8 +289,8 @@ def server(input, output, session: Session):
             + theme_seaborn()
 
             + labs(title = 'Odds of a person having heart disease',
-                   x = 'key_indicators',
-                   y = 'Percentage')
+                   x = 'key Indicators',
+                   y = 'Odds')
 
             + coord_flip()
 
