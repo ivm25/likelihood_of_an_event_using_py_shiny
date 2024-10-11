@@ -53,21 +53,11 @@ heart['ca'] = pd.to_numeric(heart['ca'])
 
 heart = heart.drop(columns = ['Unnamed: 0'])
 
-predictor_columns = ['age',
-             'thalach',
-             'restecg',
-             'ca',
-            #  'sex',
-            #  'cp',
-            #  'trestbps'
-            ]
 
 
-predictors = heart[predictor_columns]
+predictors = process_data(heart)[0]
 
-
-y = heart['present']
-
+y = process_data(heart)[1]
 
 x_train, x_test, y_train, y_test = split_data(predictors, 
                                               y,
@@ -75,8 +65,50 @@ x_train, x_test, y_train, y_test = split_data(predictors,
                                                 random_state=42)
 
 
+mfw_output = mlflow_log_regression(x_train, y_train)
+# heart_model = bmb.Model("present ~ age + thalach + restecg + ca",
+#                         heart, family="bernoulli")
 
 bayesian_model = az.from_netcdf('output/heart_model.nc')
+
+
+# age_grid = np.linspace(heart['age'].min(), heart['age'].max(), 100)
+
+
+# # Create a DataFrame to hold the predictions
+# pred_df = pd.DataFrame({
+#     'age': np.tile(age_grid, len(heart['ca'].unique())),
+#     'ca': np.repeat(heart['ca'].unique(), len(age_grid)),
+#     'thalach': heart['thalach'].mean(),  # Assuming mean value for other predictors
+#     'restecg': heart['restecg'].mode()[0] 
+# })
+
+
+# # Generate predictions
+# predictions = heart_model.predict(bayesian_model, data = pred_df,
+#                                   )
+
+# # Add predictions to the DataFrame
+# pred_df['probability'] = predictions
+# presence_posterior = az.extract_dataset(bayesian_model, num_samples = 100)["p"]
+
+
+
+
+# _, ax = plt.subplots(figsize=(7, 5))
+
+# for c in heart['ca'].unique():
+#     # Which rows in new_data correspond to party?
+#     idx = pred_df.index[pred_df["ca"] == c].tolist()
+#     print(idx)
+#     ax.plot(pred_df.loc[idx, 'age'], presence_posterior[idx][0], alpha=0.5)
+
+# ax.set_ylabel("P(disease='present' | age)")
+# ax.set_xlabel("Age", fontsize=15)
+# ax.set_ylim(0, 1)
+# ax.set_xlim(18, 90)
+# plt.show()
+
 
 trace_df = az.extract(bayesian_model, 
                       var_names=['age',
@@ -264,7 +296,7 @@ def server(input, output, session: Session):
     @render.plot
     def Odds_summary():
         # Histogram of the selected variable (input.var())
-        p = pd.DataFrame(odds(logit_model,
+        p = pd.DataFrame(odds(mfw_output,
                  predictors,
                  y))
         
