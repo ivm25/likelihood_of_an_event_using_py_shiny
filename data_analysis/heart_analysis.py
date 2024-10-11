@@ -18,6 +18,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import recall_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import classification_report
+from sklearn.model_selection import GridSearchCV
+
+import mlflow
+import mlflow.sklearn
+import mlflow.xgboost
 
 
 # PyMC3 for Bayesian Inference
@@ -64,33 +69,33 @@ grouped_data = heart.groupby("present").agg(
     }
 )
      
-# Some columns have a small, 
-# but noticeable difference when 
-# stratified by predictors.
-#  Based on the differences and some 
-# knowledge about heart disease,
-#  these seem like good candidates for predictors:
+def process_data(df):
 
-# - age
-# - thalach (maximum heart rate achieved)
-# - restecg (resting ECG)
-# - ca (number of vessels colored by fluoroscopy)
+    data_encoded = pd.get_dummies(df, columns = ['sex',
+                                                 'cp',
+                                                 'fbs',
+                                                 'restecg',
+                                                 'exang',
+                                                 'slope',
+                                                 'ca',
+                                                 'thal'
+                                                 ],
+                                                 drop_first = True)
+    
+    # Define the target and predictors
+    target = data_encoded['present']
 
-# predictor_columns = ['age',
-#              'thalach',
-#              'restecg',
-#              'ca',
-       
-#             ]
+    predictors = data_encoded.drop('present', axis = 1)
+
+    # standardising the numerical features
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(predictors)
+    # Convert the scaled data back to a DataFrame and assign the original column names
+    X_scaled_df = pd.DataFrame(X_scaled, columns=predictors.columns)
+    
+    return X_scaled_df, target
 
 
-# predictors = heart[predictor_columns]
-
-
-
-# outcome_var = heart['present']
-
-# Divide the data into train test datasets
 
 def split_data(X, y, test_size=0.3, random_state=42):
     """
@@ -105,7 +110,10 @@ def split_data(X, y, test_size=0.3, random_state=42):
     Returns:
     X_train, X_test, y_train, y_test: Split data.
     """
-    return train_test_split(X, y, test_size=test_size, random_state=random_state)
+    return train_test_split(X,
+                             y,
+                               test_size=test_size,
+                                 random_state=random_state)
 
 
 
@@ -123,12 +131,57 @@ def build_and_train_model(x_train, y_train):
     Returns:
     model (LogisticRegression): Trained logistic regression model.
     """
+   
+
 
     model = LogisticRegression()
     model.fit(x_train, y_train)
     joblib.dump(model, "output/logistic_model.pkl") 
     return model
 
+
+
+def mlflow_log_regression(x_train, y_train):
+    """
+    Build and train the logistic regression model.
+    
+    Parameters:
+    X_train (DataFrame): Training features.
+    y_train (Series): Training target variable.
+    
+    Returns:
+    model (LogisticRegression): Trained logistic regression model.
+    """
+    # Define the parameter grid
+    param_grid = {
+    'C': [0.01, 0.1, 1, 10, 100],
+    'penalty': ['l1', 'l2'],
+    'solver': ['liblinear']
+                    }
+    
+    grid_search = GridSearchCV(LogisticRegression(),
+                                param_grid, 
+                                cv=5, 
+                                scoring='accuracy')
+    
+    with mlflow.start_run():
+        grid_search.fit(x_train, y_train)
+        
+
+        # Log best parameters and score
+        mlflow.log_params(grid_search.best_params_)
+        mlflow.log_metric("best_score",
+                          grid_search.best_score_)
+        
+        # Log the best Model
+        best_model = grid_search.best_estimator_
+        mlflow.sklearn.log_model(best_model, "best_model")
+
+        print(f"Best Parameters: {grid_search.best_params_}")
+        
+
+   
+    return best_model
 
 
 
