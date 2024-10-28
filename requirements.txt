@@ -8,7 +8,7 @@ pymc
 numpy
 bambi
 xgboost
-
+SciPy
 
 
 requests
@@ -27,3 +27,13 @@ rsconnect-python
 shinyswatch
 Jinja2
 mlflow
+
+
+
+# openai
+# tabulate
+# langchain
+# langchain-experimental
+# langchain_openai
+# build
+# spacy

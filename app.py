@@ -36,6 +36,8 @@ from plotnine.geoms.geom_point import geom_point
 from plotnine.geoms.geom_smooth import geom_smooth
 
 
+from PIL import Image
+# import spacy
 
 # Styles
 
@@ -65,23 +67,26 @@ x_train, x_test, y_train, y_test = split_data(predictors,
                                                 random_state=42)
 
 
-mfw_output = mlflow_log_regression(x_train, y_train)
+cvlr_output = cross_val_log_regression(x_train, y_train)
 # heart_model = bmb.Model("present ~ age + thalach + restecg + ca",
 #                         heart, family="bernoulli")
 
 bayesian_model = az.from_netcdf('output/heart_model.nc')
 
+p = pd.DataFrame(odds(cvlr_output,
+                 predictors,
+                 y))
 
 # age_grid = np.linspace(heart['age'].min(), heart['age'].max(), 100)
 
-
-# # Create a DataFrame to hold the predictions
+# Create a DataFrame to hold the predictions
 # pred_df = pd.DataFrame({
 #     'age': np.tile(age_grid, len(heart['ca'].unique())),
 #     'ca': np.repeat(heart['ca'].unique(), len(age_grid)),
 #     'thalach': heart['thalach'].mean(),  # Assuming mean value for other predictors
 #     'restecg': heart['restecg'].mode()[0] 
 # })
+
 
 
 # # Generate predictions
@@ -199,7 +204,7 @@ app_ui = ui.page_fluid(
     ui.navset_card_pill(ui.nav_panel("Problem Statement",  
     ui.layout_sidebar(
     
-    ui.sidebar(ui.p("""This analsis is an objective take on
+    ui.sidebar(ui.p("""This analysis is an objective take on
                         the various factors that could potentially 
                         impact heart on the basis of all the factors
                         in this dataset.
@@ -238,8 +243,25 @@ app_ui = ui.page_fluid(
     # Add a title to the page with some top padding
     ui.panel_title(ui.h2("Presence of Heart disease fitted as a Logit function", class_="pt-5")),
     # A container for plot output
-    ui.output_plot("logit_plot"),
-    ui.output_plot("Odds_summary")
+    ui.output_plot("logit_plot")
+  
+    )
+    ),
+    ui.nav_panel("Odds of Heart Disease",  
+    ui.layout_sidebar(
+    
+    ui.sidebar( # A select input for choosing the variable to plot
+    # ui.input_radio_buttons(
+    #     "var_2", "Select variable", choices= list(cols_to_use_logit_fit),
+    #     selected = 'ca'
+    # )
+    ),
+    # Add a title to the page with some top padding
+    ui.panel_title(ui.h2("Estimating the Odds of heart disease", class_="pt-5")),
+    # A container for plot output
+  
+    ui.output_plot("Odds_summary"),
+  
     )
     )
  
@@ -279,7 +301,7 @@ def server(input, output, session: Session):
     @render.plot
     def logit_plot():
         # Histogram of the selected variable (input.var())
-        p = sns.lmplot(x = input.var_2(),
+        logreg_plot = sns.lmplot(x = input.var_2(),
                        y = 'present',
                        data = heart,
                        col = 'sex',
@@ -287,8 +309,10 @@ def server(input, output, session: Session):
                        logistic=True
                          )
         
-            
-        return p.set(xlabel=input.var_2(),
+     
+ 
+
+        return  logreg_plot.set(xlabel=input.var_2(),
                      ylabel = 'Presence of Heart Disease',
                      )
     
@@ -296,7 +320,7 @@ def server(input, output, session: Session):
     @render.plot
     def Odds_summary():
         # Histogram of the selected variable (input.var())
-        p = pd.DataFrame(odds(mfw_output,
+        p = pd.DataFrame(odds(cvlr_output,
                  predictors,
                  y))
         
@@ -328,6 +352,8 @@ def server(input, output, session: Session):
 
              )
         
+
+        
         return g
     
   
@@ -347,7 +373,10 @@ def server(input, output, session: Session):
         
         return summary_df
     
-    
+    # @output
+    # @render.text
+    # def ai_answers():
+    #     return agent.run(input.text_input())
 
     # @render.plot
     # def roc_plot():

@@ -140,6 +140,52 @@ def build_and_train_model(x_train, y_train):
     return model
 
 
+def cross_val_log_regression(x_train, y_train):
+    """
+    Build and train the logistic regression model.
+    
+    Parameters:
+    X_train (DataFrame): Training features.
+    y_train (Series): Training target variable.
+    
+    Returns:
+    model (LogisticRegression): Trained logistic regression model.
+    """
+    # Define the parameter grid
+    param_grid = {
+    'C': [0.01, 0.1, 1, 10, 100],
+    'penalty': ['l1', 'l2'],
+    'solver': ['liblinear']
+                    }
+    
+    grid_search = GridSearchCV(LogisticRegression(),
+                                param_grid, 
+                                cv=5, 
+                                scoring='accuracy')
+    
+    
+    grid_search.fit(x_train, y_train)
+    
+
+    # Log best parameters and score
+
+    best_score = grid_search.best_score_
+
+    best_parameters = grid_search.best_params_
+
+    # save the best Model
+    best_model = grid_search.best_estimator_
+
+
+    print(f"Best Parameters: {best_parameters}")
+    
+    print(f"Best Model: {best_model}")
+
+    print(f"Best Score: {best_score}")
+
+   
+    return best_model
+
 
 def mlflow_log_regression(x_train, y_train):
     """
