@@ -27,7 +27,8 @@ rsconnect-python
 shinyswatch
 Jinja2
 mlflow
-
+torch
+transformers
 
 
 # openai
